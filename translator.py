@@ -12,6 +12,9 @@ class BilangTranslator:
 
     best_lang1_to_lang2_translations = []
 
+    translations = {}
+
+
     logger = logging.getLogger("BilangTranslator")
     handler = logging.StreamHandler(sys.stdout)
     formatter = logging.Formatter('\t'.join(["%(asctime)s", "%(name)s", "%(levelname)s", "%(message)s"]))
@@ -19,7 +22,7 @@ class BilangTranslator:
     logger.addHandler(handler)
     logger.setLevel(logging.INFO)
 
-    def __init__(self, lang1, lang2, embeddings_fn1, embeddings_fn2):
+    def __init__(self, lang1, lang2, embeddings_fn1, embeddings_fn2, initialize_translations=True):
         self.lang1 = lang1
         self.lang2 = lang2
         self.embeddings_fn1 = embeddings_fn1
@@ -30,6 +33,12 @@ class BilangTranslator:
         self.logger.info("BEFORE load vectors fn 2")
         self.models[self.lang2] = KeyedVectors.load_word2vec_format(embeddings_fn2)
         self.logger.info("AFTER load vectors fn 2")
+
+        self.translations[lang1] = {}
+        self.translations[lang2] = {}
+        if initialize_translations:
+            self.initialize_translations()
+
 
     def _translate_naive(self, src_lang, tgt_lang, src_word, n=10):
         assert src_lang in (self.lang1, self.lang2)
@@ -169,3 +178,11 @@ class BilangTranslator:
 
     def translate_default(self, src_lang, tgt_lang, src_word, n=10):
         return self._translate_naive(src_lang, tgt_lang, src_word, n=n)
+
+    def initialize_translations(self):
+        self._initialize_translations(self.lang1, self.lang2)
+        self._initialize_translations(self.lang2, self.lang1)
+
+    def _initialize_translations(self, src_lang, tgt_lang):
+        for wf in self.models[src_lang].vocab:
+            self.translations[src_lang][wf] = [(elem[1], elem[2]) for elem in self.translate_default(src_lang, tgt_lang, wf)]

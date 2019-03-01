@@ -2,13 +2,12 @@ from unittest import TestCase
 from translator import BilangTranslator
 
 
-class TestBilangTranslator(TestCase):
+class TestFastBilangTranslator(TestCase):
     l1 = "kaz"
     l2 = "kir"
     e_fn1 = "aligned-kaz.vec.short"
     e_fn2 = "aligned-kir.vec.short"
-    smallTranslator = BilangTranslator(l1, l2, e_fn1, e_fn2)
-    largeTranslator = BilangTranslator(l1, l2, "aligned-kaz.vec", "aligned-kir.vec")
+    smallTranslator = BilangTranslator(l1, l2, e_fn1, e_fn2, initialize_translations=False)
     # def test__translate_naive(self):
     #     self.fail()
     #
@@ -37,21 +36,35 @@ class TestBilangTranslator(TestCase):
         word = "бир"
         self.smallTranslator.get_nearest_neighbors(lang, self.smallTranslator.get_vec_by_word(lang, word))
 
+    def test_initialize_translations(self):
+        self.smallTranslator.initialize_translations()
+        pass
 
-    def test_meaning_clustering(self):
-        lang1 = "kaz"
-        word1 = "құда"
-        lang2 = "kir"
-        word2 = "куда"
-        word22 = "заттын"
-        self.largeTranslator.meaning_clustering(lang1, word1, lang2, word2)
-        self.largeTranslator.meaning_clustering(lang1, word1, lang2, word22)
 
-    def test_share_meaning(self):
-        lang1 = "kaz"
-        word1 = "құда"
-        lang2 = "kir"
-        word2 = "куда"
-        word22 = "заттын"
-        assert self.largeTranslator.share_meaning(lang1, word1, lang2, word2, depth=1)
-        assert not self.largeTranslator.share_meaning(lang1, word1, lang2, word22)
+
+
+# class TestLargeBilangTranslator(TestCase):
+#     l1 = "kaz"
+#     l2 = "kir"
+#     e_fn1 = "aligned-kaz.vec"
+#     e_fn2 = "aligned-kir.vec"
+#     largeTranslator = BilangTranslator(l1, l2, e_fn1, e_fn2)
+#
+#
+#     def test_meaning_clustering(self):
+#         lang1 = "kaz"
+#         word1 = "құда"
+#         lang2 = "kir"
+#         word2 = "куда"
+#         word22 = "заттын"
+#         self.largeTranslator.meaning_clustering(lang1, word1, lang2, word2)
+#         self.largeTranslator.meaning_clustering(lang1, word1, lang2, word22)
+#
+#     def test_share_meaning(self):
+#         lang1 = "kaz"
+#         word1 = "құда"
+#         lang2 = "kir"
+#         word2 = "куда"
+#         word22 = "заттын"
+#         assert self.largeTranslator.share_meaning(lang1, word1, lang2, word2, depth=1)
+#         assert not self.largeTranslator.share_meaning(lang1, word1, lang2, word22)
