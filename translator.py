@@ -38,12 +38,19 @@ class BilangTranslator:
         # src_model = self.models[src_lang]
         # tgt_model = self.models[tgt_lang]
 
-        src_vec = self.get_vec_by_word(src_lang, src_word)
-        nearest_translations_words = self.get_nearest_neighbors(tgt_lang, src_vec, n=n)
+        src_vec = None
 
         res = []
-        for translation_candidate_word, distance in nearest_translations_words:
-            res.append((src_word, translation_candidate_word, distance))
+        try:
+            src_vec = self.get_vec_by_word(src_lang, src_word)
+            nearest_translations_words = self.get_nearest_neighbors(tgt_lang, src_vec, n=n)
+
+            for translation_candidate_word, distance in nearest_translations_words:
+                res.append((src_word, translation_candidate_word, distance))
+
+        except KeyError as e:
+            self.logger.warning(e)
+
 
         return res
 
