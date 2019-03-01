@@ -39,11 +39,19 @@ class TestBilangTranslator(TestCase):
 
 
     def test_meaning_clustering(self):
-
         lang1 = "kaz"
         word1 = "құда"
         lang2 = "kir"
         word2 = "куда"
+        word22 = "заттын"
         self.largeTranslator.meaning_clustering(lang1, word1, lang2, word2)
-        word2 = "заттын"
-        self.largeTranslator.meaning_clustering(lang1, word1, lang2, word2)
+        self.largeTranslator.meaning_clustering(lang1, word1, lang2, word22)
+
+    def test_share_meaning(self):
+        lang1 = "kaz"
+        word1 = "құда"
+        lang2 = "kir"
+        word2 = "куда"
+        word22 = "заттын"
+        assert self.largeTranslator.share_meaning(lang1, word1, lang2, word2)
+        assert not self.largeTranslator.share_meaning(lang1, word1, lang2, word22)

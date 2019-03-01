@@ -117,6 +117,7 @@ class BilangTranslator:
         w2_l1_tr_2 = set([tr[1] for tr in word2_backbacktranslations])
         w2_l2_tr_1 = set([tr[1] for tr in word2_backtranslations])
 
+        #todo naming!!!
         int1 = w1_l2_tr_1.intersection({word2})
         int2 = w1_l2_tr_1.intersection(w2_l2_tr_1)
         int3 = w1_l2_tr_2.intersection({word2})
@@ -135,15 +136,26 @@ class BilangTranslator:
             "depth 2": {f"{lang1}2{lang2}": len(int4), f"{lang2}2{lang1}": len(int8)}
         }
 
-        print(sizes)
-        # print(int1, int2, int3, int4, int5, int6, int7, int8)
-
         self.logger.info("AFTER meaning_clustering()")
+
+        return sizes
+
+
+    def share_meaning(self, lang1, word1, lang2, word2):
+        meaning_clustering = self.meaning_clustering(lang1, word1, lang2, word2)
+
+        not_share_meaning = 0 in meaning_clustering["depth 0"][0].values() and \
+                            0 in meaning_clustering["depth 0"][1].values() and \
+                            0 in meaning_clustering["depth 1"].values() and \
+                            0 in meaning_clustering["depth 2"].values()
+
+        return not not_share_meaning
+
 
     def _get_translations_of_translations(self, lang1, lang2, word1_translations):
         backtranslations = [self.translate_default(lang1, lang2, src_w_tr[1]) for src_w_tr in word1_translations]
         backtranslations = [item for sublist in backtranslations for item in sublist]
         return backtranslations
 
-    def translate_default(self, src_lang, tgt_lang, src_word):
-        return self._translate_naive(src_lang, tgt_lang, src_word)
+    def translate_default(self, src_lang, tgt_lang, src_word, n=10):
+        return self._translate_naive(src_lang, tgt_lang, src_word, n=n)
