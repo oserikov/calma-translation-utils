@@ -96,37 +96,40 @@ class BilangTranslator:
     def get_nearest_neighbors(self, lang, vec, n=100):
         return [(elem[0], elem[1]) for elem in self.models[lang].similar_by_vector(vec, topn=n)]
 
-    def meaning_clustering(self, lang1, word1, lang2, word2):
+    def meaning_clustering(self, lang1, word1, lang2, word2, depth=2):
 
         # print(self.models[lang1])
         self.logger.info("BEFORE meaning_clustering()")
 
         word1_translations = self.translate_default(lang1, lang2, word1)
         word2_translations = self.translate_default(lang2, lang1, word2)
-        word1_backtranslations = self._get_translations_of_translations(lang2, lang1, word1_translations)
-        word2_backtranslations = self._get_translations_of_translations(lang1, lang2, word2_translations)
+        if depth == 2:
+            word1_backtranslations = self._get_translations_of_translations(lang2, lang1, word1_translations)
+            word2_backtranslations = self._get_translations_of_translations(lang1, lang2, word2_translations)
 
-        word1_backbacktranslations = self._get_translations_of_translations(lang1, lang2, word1_backtranslations)
-        word2_backbacktranslations = self._get_translations_of_translations(lang2, lang1, word2_backtranslations)
+            word1_backbacktranslations = self._get_translations_of_translations(lang1, lang2, word1_backtranslations)
+            word2_backbacktranslations = self._get_translations_of_translations(lang2, lang1, word2_backtranslations)
 
         w1_l2_tr_1 = set([tr[1] for tr in word1_translations])
-        w1_l2_tr_2 = set([tr[1] for tr in word1_backbacktranslations])
-        w1_l1_tr_1 = set([tr[1] for tr in word1_backtranslations])
+        if depth == 2:
+            w1_l2_tr_2 = set([tr[1] for tr in word1_backbacktranslations])
+            w1_l1_tr_1 = set([tr[1] for tr in word1_backtranslations])
 
         w2_l1_tr_1 = set([tr[1] for tr in word2_translations])
-        w2_l1_tr_2 = set([tr[1] for tr in word2_backbacktranslations])
-        w2_l2_tr_1 = set([tr[1] for tr in word2_backtranslations])
+        if depth == 2:
+            w2_l1_tr_2 = set([tr[1] for tr in word2_backbacktranslations])
+            w2_l2_tr_1 = set([tr[1] for tr in word2_backtranslations])
 
         #todo naming!!!
         int1 = w1_l2_tr_1.intersection({word2})
-        int2 = w1_l2_tr_1.intersection(w2_l2_tr_1)
-        int3 = w1_l2_tr_2.intersection({word2})
-        int4 = w1_l2_tr_2.intersection(w2_l2_tr_1)
+        int2 = w1_l2_tr_1.intersection(w2_l2_tr_1) if depth == 2 else set()
+        int3 = w1_l2_tr_2.intersection({word2}) if depth == 2 else set()
+        int4 = w1_l2_tr_2.intersection(w2_l2_tr_1) if depth == 2 else set()
 
         int5 = w2_l1_tr_1.intersection({word1})
-        int6 = w2_l1_tr_1.intersection(w1_l1_tr_1)
-        int7 = w2_l1_tr_2.intersection({word1})
-        int8 = w2_l1_tr_2.intersection(w1_l1_tr_1)
+        int6 = w2_l1_tr_1.intersection(w1_l1_tr_1) if depth == 2 else set()
+        int7 = w2_l1_tr_2.intersection({word1}) if depth == 2 else set()
+        int8 = w2_l1_tr_2.intersection(w1_l1_tr_1) if depth == 2 else set()
 
         sizes = {
             "depth 0": [
@@ -141,8 +144,8 @@ class BilangTranslator:
         return sizes
 
 
-    def share_meaning(self, lang1, word1, lang2, word2):
-        meaning_clustering = self.meaning_clustering(lang1, word1, lang2, word2)
+    def share_meaning(self, lang1, word1, lang2, word2, depth=2):
+        meaning_clustering = self.meaning_clustering(lang1, word1, lang2, word2, depth)
 
         not_share_meaning = 0 in meaning_clustering["depth 0"][0].values() and \
                             0 in meaning_clustering["depth 0"][1].values() and \

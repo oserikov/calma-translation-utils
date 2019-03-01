@@ -53,5 +53,5 @@ class TestBilangTranslator(TestCase):
         lang2 = "kir"
         word2 = "куда"
         word22 = "заттын"
-        assert self.largeTranslator.share_meaning(lang1, word1, lang2, word2)
+        assert self.largeTranslator.share_meaning(lang1, word1, lang2, word2, depth=1)
         assert not self.largeTranslator.share_meaning(lang1, word1, lang2, word22)
