@@ -150,7 +150,7 @@ class BilangTranslator:
 
         for word in words_src:
             for tr in translations_src[word]:
-                if tr in words_tgt:
+                if tr[1] in words_tgt:
                     lang_src_2_lang_tgt_pairs.append((word, tr[1], tr[2]))
 
         return lang_src_2_lang_tgt_pairs
