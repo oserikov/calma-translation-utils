@@ -121,25 +121,25 @@ class BilangTranslator:
         lang2_to_lang1_pairs = self._intersect_translations(translations2, words2, words1)
         pairs2_len = len(lang2_to_lang1_pairs)
 
-        # lang1_to_lang2_sets = {}
-        # for idx, entry in enumerate(lang1_to_lang2_pairs):
-        #     if idx % 500 == 0:
-        #         self.logger.info(f"inflect_translation_pairs():{lang1} clustered {idx} pair of {pairs1_len}")
-        #     if entry[2] > treshold:
-        #         if entry[0] not in lang1_to_lang2_sets.keys():
-        #             lang1_to_lang2_sets[entry[0]] = {(entry[0], lang1)}
-        #
-        #         lang1_to_lang2_sets[entry[0]].add((entry[1], lang2))
-        #
-        # for idx, entry in enumerate(lang2_to_lang1_pairs):
-        #     if idx % 500 == 0:
-        #         self.logger.info(f"inflect_translation_pairs():{lang2} clustered {idx} pair of {pairs2_len}")
-        #     if entry[2] > treshold:
-        #         # entry[1] cause we use lang1 as cluster naming language
-        #         if entry[1] not in lang1_to_lang2_sets.keys():
-        #             lang1_to_lang2_sets[entry[1]] = {(entry[1], lang1)}
-        #
-        #         lang1_to_lang2_sets[entry[1]].add((entry[0], lang2))
+        lang1_to_lang2_sets = {}
+        for idx, entry in enumerate(lang1_to_lang2_pairs):
+            if idx % 500 == 0:
+                self.logger.info(f"inflect_translation_pairs():{lang1} clustered {idx} pair of {pairs1_len}")
+            if entry[2] > treshold:
+                if entry[0] not in lang1_to_lang2_sets.keys():
+                    lang1_to_lang2_sets[entry[0]] = {(entry[0], lang1)}
+
+                lang1_to_lang2_sets[entry[0]].add((entry[1], lang2))
+
+        for idx, entry in enumerate(lang2_to_lang1_pairs):
+            if idx % 500 == 0:
+                self.logger.info(f"inflect_translation_pairs():{lang2} clustered {idx} pair of {pairs2_len}")
+            if entry[2] > treshold:
+                # entry[1] cause we use lang1 as cluster naming language
+                if entry[1] not in lang1_to_lang2_sets.keys():
+                    lang1_to_lang2_sets[entry[1]] = {(entry[1], lang1)}
+
+                lang1_to_lang2_sets[entry[1]].add((entry[0], lang2))
 
         return lang1_to_lang2_pairs, lang2_to_lang1_pairs
 
