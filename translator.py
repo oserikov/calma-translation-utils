@@ -3,6 +3,8 @@ import logging
 import sys
 
 
+# todo logging levels
+# todo docstrings
 class BilangTranslator:
     lang1 = None
     lang2 = None
