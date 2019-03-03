@@ -43,28 +43,28 @@ class TestFastBilangTranslator(TestCase):
 
 
 
-# class TestLargeBilangTranslator(TestCase):
-#     l1 = "kaz"
-#     l2 = "kir"
-#     e_fn1 = "aligned-kaz.vec"
-#     e_fn2 = "aligned-kir.vec"
-#     largeTranslator = BilangTranslator(l1, l2, e_fn1, e_fn2)
-#
-#
-#     def test_meaning_clustering(self):
-#         lang1 = "kaz"
-#         word1 = "құда"
-#         lang2 = "kir"
-#         word2 = "куда"
-#         word22 = "заттын"
-#         self.largeTranslator.meaning_clustering(lang1, word1, lang2, word2)
-#         self.largeTranslator.meaning_clustering(lang1, word1, lang2, word22)
-#
-#     def test_share_meaning(self):
-#         lang1 = "kaz"
-#         word1 = "құда"
-#         lang2 = "kir"
-#         word2 = "куда"
-#         word22 = "заттын"
-#         assert self.largeTranslator.share_meaning(lang1, word1, lang2, word2, depth=1)
-#         assert not self.largeTranslator.share_meaning(lang1, word1, lang2, word22)
+class TestLargeBilangTranslator(TestCase):
+    l1 = "kaz"
+    l2 = "kir"
+    e_fn1 = "aligned-kaz.vec"
+    e_fn2 = "aligned-kir.vec"
+    largeTranslator = BilangTranslator(l1, l2, e_fn1, e_fn2)
+
+
+    def test_meaning_clustering(self):
+        lang1 = "kaz"
+        word1 = "құда"
+        lang2 = "kir"
+        word2 = "куда"
+        word22 = "заттын"
+        self.largeTranslator.meaning_clustering(lang1, word1, lang2, word2)
+        self.largeTranslator.meaning_clustering(lang1, word1, lang2, word22)
+
+    def test_share_meaning(self):
+        lang1 = "kaz"
+        word1 = "құда"
+        lang2 = "kir"
+        word2 = "куда"
+        word22 = "заттын"
+        assert self.largeTranslator.share_meaning(lang1, word1, lang2, word2, depth=1)
+        assert not self.largeTranslator.share_meaning(lang1, word1, lang2, word22)

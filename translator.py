@@ -14,7 +14,6 @@ class BilangTranslator:
 
     translations = {}
 
-
     logger = logging.getLogger("BilangTranslator")
     handler = logging.StreamHandler(sys.stdout)
     formatter = logging.Formatter('\t'.join(["%(asctime)s", "%(name)s", "%(levelname)s", "%(message)s"]))
@@ -39,7 +38,6 @@ class BilangTranslator:
         if initialize_translations:
             self.initialize_translations()
 
-
     def _translate_naive(self, src_lang, tgt_lang, src_word, n=10):
         assert src_lang in (self.lang1, self.lang2)
         assert tgt_lang in (self.lang1, self.lang2)
@@ -59,7 +57,6 @@ class BilangTranslator:
 
         except KeyError as e:
             self.logger.warning(e)
-
 
         return res
 
@@ -112,64 +109,60 @@ class BilangTranslator:
     def get_nearest_neighbors(self, lang, vec, n=100):
         return [(elem[0], elem[1]) for elem in self.models[lang].similar_by_vector(vec, topn=n)]
 
-    def meaning_clustering(self, lang1, word1, lang2, word2, depth=2):
+    def inflect_translation_pairs(self, lang1, words1, lang2, words2, treshold=0):
+        words1 = set(words1)
+        words2 = set(words2)
 
-        # print(self.models[lang1])
-        self.logger.info("BEFORE meaning_clustering()")
+        translations1 = self.translate_default_set(lang1, lang2, words1)
+        translations2 = self.translate_default_set(lang2, lang1, words2)
 
-        word1_translations = self.translate_default(lang1, lang2, word1)
-        word2_translations = self.translate_default(lang2, lang1, word2)
-        if depth == 2:
-            word1_backtranslations = self._get_translations_of_translations(lang2, lang1, word1_translations)
-            word2_backtranslations = self._get_translations_of_translations(lang1, lang2, word2_translations)
+        lang1_to_lang2_pairs = self._intersect_translations(translations1, words1, words2)
+        pairs1_len = len(lang1_to_lang2_pairs)
+        lang2_to_lang1_pairs = self._intersect_translations(translations2, words2, words1)
+        pairs2_len = len(lang2_to_lang1_pairs)
 
-            word1_backbacktranslations = self._get_translations_of_translations(lang1, lang2, word1_backtranslations)
-            word2_backbacktranslations = self._get_translations_of_translations(lang2, lang1, word2_backtranslations)
+        lang1_to_lang2_sets = {}
+        for idx, entry in enumerate(lang1_to_lang2_pairs):
+            if idx % 500 == 0:
+                self.logger.info(f"inflect_translation_pairs():{lang1} clustered {idx} pair of {pairs1_len}")
+            if entry[2] > treshold:
+                if entry[0] not in lang1_to_lang2_sets.keys():
+                    lang1_to_lang2_sets[entry[0]] = {(entry[0], lang1)}
 
-        w1_l2_tr_1 = set([tr[1] for tr in word1_translations])
-        if depth == 2:
-            w1_l2_tr_2 = set([tr[1] for tr in word1_backbacktranslations])
-            w1_l1_tr_1 = set([tr[1] for tr in word1_backtranslations])
+                lang1_to_lang2_sets[entry[0]].add((entry[1], lang2))
 
-        w2_l1_tr_1 = set([tr[1] for tr in word2_translations])
-        if depth == 2:
-            w2_l1_tr_2 = set([tr[1] for tr in word2_backbacktranslations])
-            w2_l2_tr_1 = set([tr[1] for tr in word2_backtranslations])
+        for idx, entry in enumerate(lang2_to_lang1_pairs):
+            if idx % 500 == 0:
+                self.logger.info(f"inflect_translation_pairs():{lang2} clustered {idx} pair of {pairs2_len}")
+            if entry[2] > treshold:
+                # entry[1] cause we use lang1 as cluster naming language
+                if entry[1] not in lang1_to_lang2_sets.keys():
+                    lang1_to_lang2_sets[entry[1]] = {(entry[1], lang1)}
 
-        #todo naming!!!
-        int1 = w1_l2_tr_1.intersection({word2})
-        int2 = w1_l2_tr_1.intersection(w2_l2_tr_1) if depth == 2 else set()
-        int3 = w1_l2_tr_2.intersection({word2}) if depth == 2 else set()
-        int4 = w1_l2_tr_2.intersection(w2_l2_tr_1) if depth == 2 else set()
+                lang1_to_lang2_sets[entry[1]].add((entry[0], lang2))
 
-        int5 = w2_l1_tr_1.intersection({word1})
-        int6 = w2_l1_tr_1.intersection(w1_l1_tr_1) if depth == 2 else set()
-        int7 = w2_l1_tr_2.intersection({word1}) if depth == 2 else set()
-        int8 = w2_l1_tr_2.intersection(w1_l1_tr_1) if depth == 2 else set()
+        return lang1_to_lang2_sets
 
-        sizes = {
-            "depth 0": [
-                {f"{lang1}2{lang2}": len(int1), f"{lang2}2{lang1}": len(int5)},
-                {f"{lang1}2{lang2}": len(int3), f"{lang2}2{lang1}": len(int7)}],
-            "depth 1": {f"{lang1}2{lang2}": len(int2), f"{lang2}2{lang1}": len(int6)},
-            "depth 2": {f"{lang1}2{lang2}": len(int4), f"{lang2}2{lang1}": len(int8)}
-        }
+    @staticmethod
+    # todo: remove words_src cause it duplicates translations_src.keys()?
+    def _intersect_translations(translations_src, words_src, words_tgt):
+        lang_src_2_lang_tgt_pairs = []
 
-        self.logger.info("AFTER meaning_clustering()")
+        for word in words_src:
+            for tr in translations_src[word]:
+                if tr in words_tgt:
+                    lang_src_2_lang_tgt_pairs.append((word, tr[1], tr[2]))
 
-        return sizes
+        return lang_src_2_lang_tgt_pairs
 
-
-    def share_meaning(self, lang1, word1, lang2, word2, depth=2):
-        meaning_clustering = self.meaning_clustering(lang1, word1, lang2, word2, depth)
-
-        not_share_meaning = 0 in meaning_clustering["depth 0"][0].values() and \
-                            0 in meaning_clustering["depth 0"][1].values() and \
-                            0 in meaning_clustering["depth 1"].values() and \
-                            0 in meaning_clustering["depth 2"].values()
-
-        return not not_share_meaning
-
+    def translate_default_set(self, src_lang, tgt_lang, words):
+        translations = {}
+        words_len = len(words)
+        for idx, word in enumerate(words):
+            translations[word] = self.translate_default(src_lang, tgt_lang, word)
+            if idx % 500 == 0:
+                self.logger.info(f"translate_default_set():{src_lang} preprocessed {idx} words of {words_len}")
+        return translations
 
     def _get_translations_of_translations(self, lang1, lang2, word1_translations):
         backtranslations = [self.translate_default(lang1, lang2, src_w_tr[1]) for src_w_tr in word1_translations]
@@ -184,5 +177,11 @@ class BilangTranslator:
         self._initialize_translations(self.lang2, self.lang1)
 
     def _initialize_translations(self, src_lang, tgt_lang):
+        i = 0
+        l = len(self.models[src_lang].vocab)
         for wf in self.models[src_lang].vocab:
-            self.translations[src_lang][wf] = [(elem[1], elem[2]) for elem in self.translate_default(src_lang, tgt_lang, wf)]
+            if i % 1000 == 0:
+                print(f"{i} of {l}")
+            self.translations[src_lang][wf] = [(elem[1], elem[2]) for elem in
+                                               self.translate_default(src_lang, tgt_lang, wf)]
+            i += 1
