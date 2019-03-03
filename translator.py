@@ -143,7 +143,7 @@ class BilangTranslator:
 
                 lang1_to_lang2_sets[entry[1]].add((entry[0], lang2))
 
-        return lang1_to_lang2_pairs, lang2_to_lang1_pairs
+        return lang1_to_lang2_pairs, lang2_to_lang1_pairs, lang1_to_lang2_sets
 
     @staticmethod
     # todo: remove words_src cause it duplicates translations_src.keys()?
