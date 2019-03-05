@@ -123,7 +123,6 @@ class BilangTranslator:
 
         return lang1_to_lang2_pairs, lang2_to_lang1_pairs
 
-
     def extract_semantic_clusters(self, lang1, lang1_to_lang2_pairs, lang2, lang2_to_lang1_pairs, treshold=0):
 
         pairs1_len = len(lang1_to_lang2_pairs)
