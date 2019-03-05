@@ -123,7 +123,7 @@ class BilangTranslator:
 
         return lang1_to_lang2_pairs, lang2_to_lang1_pairs
 
-    def extract_semantic_clusters(self, lang1, lang1_to_lang2_pairs, lang2, lang2_to_lang1_pairs, treshold=0):
+    def extract_semantic_clusters_ids(self, lang1, lang1_to_lang2_pairs, lang2, lang2_to_lang1_pairs, treshold=0.):
 
         pairs1_len = len(lang1_to_lang2_pairs)
         pairs2_len = len(lang2_to_lang1_pairs)
@@ -176,6 +176,27 @@ class BilangTranslator:
 
         return word2cluster
 
+    def extract_semantic_clusters(self, lang1, lang1_to_lang2_pairs, lang2, lang2_to_lang1_pairs, tresholds):
+        semantic_clusters_for_tresholds = {treshold: [] for treshold in tresholds}
+
+        for treshold in tresholds:
+            semantic_clusters_ids = self.extract_semantic_clusters_ids(lang1, lang1_to_lang2_pairs,
+                                                                       lang2, lang2_to_lang1_pairs,
+                                                                       treshold=treshold)
+            ids = set([id_ for lang_clustering in semantic_clusters_ids.values() for id_ in lang_clustering.values()])
+            semantic_clusters = []
+            for id_ in ids:
+                semantic_cluster = set()
+                for lang, clustering in semantic_clusters_ids.items():
+                    for word, word_id in clustering.items():
+                        if word_id == id_:
+                            semantic_cluster.add((lang, word))
+
+                semantic_clusters.append(semantic_cluster)
+
+            semantic_clusters_for_tresholds[treshold] = semantic_clusters
+
+        return semantic_clusters_for_tresholds
 
     @staticmethod
     # todo: remove words_src cause it duplicates translations_src.keys()?
