@@ -111,7 +111,7 @@ class BilangTranslator:
     def get_nearest_neighbors(self, lang, vec, n=100):
         return [(elem[0], elem[1]) for elem in self.models[lang].similar_by_vector(vec, topn=n)]
 
-    def inflect_translation_pairs(self, lang1, words1, lang2, words2, treshold=0):
+    def inflect_translation_pairs(self, lang1, words1, lang2, words2):
         words1 = set(words1)
         words2 = set(words2)
 
@@ -119,13 +119,17 @@ class BilangTranslator:
         translations2 = self.translate_default_set(lang2, lang1, words2)
 
         lang1_to_lang2_pairs = self._intersect_translations(translations1, words1, words2)
-        pairs1_len = len(lang1_to_lang2_pairs)
         lang2_to_lang1_pairs = self._intersect_translations(translations2, words2, words1)
+
+        return lang1_to_lang2_pairs, lang2_to_lang1_pairs
+
+
+    def extract_semantic_clusters(self, lang1, lang1_to_lang2_pairs, lang2, lang2_to_lang1_pairs, treshold=0):
+
+        pairs1_len = len(lang1_to_lang2_pairs)
         pairs2_len = len(lang2_to_lang1_pairs)
 
-        lang1_to_lang2_sets = {}
-
-        word2cluster = {"kir": {}, "kaz": {}}
+        word2cluster = {lang1: {}, lang2: {}}
         cluster_id = 0
         for idx, entry in enumerate(lang1_to_lang2_pairs):
             if idx % 500 == 0:
@@ -169,11 +173,10 @@ class BilangTranslator:
                 word2cluster[lang2][entry[0]] = meaning_id
                 word2cluster[lang1][entry[1]] = meaning_id
 
-
-
             cluster_id += 1
 
-        return lang1_to_lang2_pairs, lang2_to_lang1_pairs, word2cluster
+        return word2cluster
+
 
     @staticmethod
     # todo: remove words_src cause it duplicates translations_src.keys()?
