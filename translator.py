@@ -171,24 +171,9 @@ class BilangTranslator:
 
 
 
-
-                # # entry[1] cause we use lang1 as cluster naming language
-                # if entry[1] not in lang1_to_lang2_sets.keys():
-                #     lang1_to_lang2_sets[entry[1]] = {(entry[1], lang1)}
-                #
-                # if entry[0] not in word2cluster[lang2].keys():
-                #     word2cluster[lang2][entry[0]] = []
-                # word2cluster[lang2][entry[0]].append(cluster_id)
-                #
-                # if entry[1] not in word2cluster[lang1].keys():
-                #     word2cluster[lang1][entry[1]] = []
-                # word2cluster[lang1][entry[1]].append(cluster_id)
-                #
-                # lang1_to_lang2_sets[entry[1]].add((entry[0], lang2))
-
             cluster_id += 1
 
-        return lang1_to_lang2_pairs, lang2_to_lang1_pairs, lang1_to_lang2_sets, word2cluster
+        return lang1_to_lang2_pairs, lang2_to_lang1_pairs, word2cluster
 
     @staticmethod
     # todo: remove words_src cause it duplicates translations_src.keys()?
