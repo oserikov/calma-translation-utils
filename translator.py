@@ -131,18 +131,21 @@ class BilangTranslator:
             if idx % 500 == 0:
                 self.logger.info(f"inflect_translation_pairs():{lang1} clustered {idx} pair of {pairs1_len}")
             if entry[2] > treshold:
-                if entry[0] not in lang1_to_lang2_sets.keys():
-                    lang1_to_lang2_sets[entry[0]] = {(entry[0], lang1)}
 
-                if entry[0] not in word2cluster[lang1].keys():
-                    word2cluster[lang1][entry[0]] = []
-                word2cluster[lang1][entry[0]].append(cluster_id)
+                meaning_id = None
+                if entry[0] in word2cluster[lang1].keys() and entry[1] in word2cluster[lang2].keys():
+                    self._merge_ids(word2cluster, lang1, entry[0], lang2, entry[1])
+                    assert word2cluster[lang1][entry[0]] == word2cluster[lang2][entry[1]]
+                    meaning_id = word2cluster[lang1][entry[0]]
+                elif entry[0] in word2cluster[lang1].keys():
+                    meaning_id = word2cluster[lang1][entry[0]]
+                elif entry[1] in word2cluster[lang2].keys():
+                    meaning_id = word2cluster[lang2][entry[1]]
+                else:
+                    meaning_id = cluster_id
 
-                if entry[1] not in word2cluster[lang2].keys():
-                    word2cluster[lang2][entry[1]] = []
-                word2cluster[lang2][entry[1]].append(cluster_id)
-
-                lang1_to_lang2_sets[entry[0]].add((entry[1], lang2))
+                word2cluster[lang1][entry[0]] = meaning_id
+                word2cluster[lang2][entry[1]] = meaning_id
 
             cluster_id += 1
 
@@ -150,19 +153,38 @@ class BilangTranslator:
             if idx % 500 == 0:
                 self.logger.info(f"inflect_translation_pairs():{lang2} clustered {idx} pair of {pairs2_len}")
             if entry[2] > treshold:
-                # entry[1] cause we use lang1 as cluster naming language
-                if entry[1] not in lang1_to_lang2_sets.keys():
-                    lang1_to_lang2_sets[entry[1]] = {(entry[1], lang1)}
 
-                if entry[0] not in word2cluster[lang2].keys():
-                    word2cluster[lang2][entry[0]] = []
-                word2cluster[lang2][entry[0]].append(cluster_id)
+                meaning_id = None
+                if entry[0] in word2cluster[lang2].keys() and entry[1] in word2cluster[lang1].keys():
+                    self._merge_ids(word2cluster, lang2, entry[0], lang1, entry[1])
+                    assert word2cluster[lang2][entry[0]] == word2cluster[lang1][entry[1]]
+                    meaning_id = word2cluster[lang2][entry[0]]
+                elif entry[0] in word2cluster[lang2].keys():
+                    meaning_id = word2cluster[lang2][entry[0]]
+                elif entry[1] in word2cluster[lang1].keys():
+                    meaning_id = word2cluster[lang1][entry[1]]
+                else:
+                    meaning_id = cluster_id
 
-                if entry[1] not in word2cluster[lang1].keys():
-                    word2cluster[lang1][entry[1]] = []
-                word2cluster[lang1][entry[1]].append(cluster_id)
+                word2cluster[lang2][entry[0]] = meaning_id
+                word2cluster[lang1][entry[1]] = meaning_id
 
-                lang1_to_lang2_sets[entry[1]].add((entry[0], lang2))
+
+
+
+                # # entry[1] cause we use lang1 as cluster naming language
+                # if entry[1] not in lang1_to_lang2_sets.keys():
+                #     lang1_to_lang2_sets[entry[1]] = {(entry[1], lang1)}
+                #
+                # if entry[0] not in word2cluster[lang2].keys():
+                #     word2cluster[lang2][entry[0]] = []
+                # word2cluster[lang2][entry[0]].append(cluster_id)
+                #
+                # if entry[1] not in word2cluster[lang1].keys():
+                #     word2cluster[lang1][entry[1]] = []
+                # word2cluster[lang1][entry[1]].append(cluster_id)
+                #
+                # lang1_to_lang2_sets[entry[1]].add((entry[0], lang2))
 
             cluster_id += 1
 
@@ -210,3 +232,17 @@ class BilangTranslator:
             self.translations[src_lang][wf] = [(elem[1], elem[2]) for elem in
                                                self.translate_default(src_lang, tgt_lang, wf)]
             i += 1
+
+    def _merge_ids(self, word2cluster, lang1, word1, lang2, word2):
+        assert word1 in word2cluster[lang1].keys()
+        assert word2 in word2cluster[lang2].keys()
+
+        base_id = word2cluster[lang1][word1]
+        old_id = word2cluster[lang2][word2]
+        for word, id_ in word2cluster[lang1].items():
+            if id_ == old_id:
+                word2cluster[lang1][word] = base_id
+
+        for word, id_ in word2cluster[lang2].items():
+            if id_ == old_id:
+                word2cluster[lang2][word] = base_id
