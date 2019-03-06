@@ -58,7 +58,7 @@ class BilangTranslator:
                 res.append((src_word, translation_candidate_word, distance))
 
         except KeyError as e:
-            self.logger.warning(e)
+            self.logger.debug(e)
 
         return res
 
